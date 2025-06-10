@@ -1,8 +1,11 @@
 import json
 import requests
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-API_KEY = "MDA1M2NhY2UtNjM0Mi00ZjM3LTllNDUtODE3ZWNkZmE2ZGE4"
-Workspace_ID = "61f3ac40ac897025894b32ca"
+API_KEY = os.getenv("API_KEY")
+Workspace_ID = os.getenv("Workspace_ID")
 BASE_URL = 'https://api.clockify.me/api/v1'
 headers = {
     'X-Api-Key': API_KEY
@@ -57,7 +60,7 @@ def calcEfficiency(projects, data):
             if user["userId"] in data:
                 wattage += int(data[user["userId"]])
         avg_watt = wattage / len(users)
-        print(f" Project name: {project['name']}, Avg wattage per hr: {round(avg_watt * total, 2)}Wh")
+        print(f" Project name: {project['name']}. Avg wattage per hr: {round(avg_watt * total, 2)}Wh")
 
 
 
@@ -66,6 +69,8 @@ if response.status_code == 200:
     projects = response.json()
     with open("specs.json", mode="r") as file:
         data = json.load(file)
+    print("This Script Displays:")
+    print("The total amount of watts per hour of each project. (Based on personal devices alone)")
     calcEfficiency(projects, data)
 else:
     print(f"Error: {response.status_code} - {response.text}")
