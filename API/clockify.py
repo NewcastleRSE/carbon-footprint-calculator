@@ -36,8 +36,9 @@ sample input - (a dict of projects with attributes of duration and memberships,
 sample output - null - prints results to terminal
 """
 def calcEfficiency(projects, data):
-     for project in projects:
-         # retrieve the duration of a project - "PT123H456M78S"
+    total_watt_per_hour =  []
+    for project in projects:
+        # retrieve the duration of a project - "PT123H456M78S"
         duration = project["duration"]
         timesList = stringSplit(duration)
         # Convert each item of the list into the total minutes of each project
@@ -52,25 +53,32 @@ def calcEfficiency(projects, data):
             total = min + sec
         else:
             total = int(timesList[0]) / 60
+        time = total / 60
 
         # calculate the avg wattage per project based on data (specs.json)
         wattage = 0
         users = project["memberships"]
         for user in users:
+            print(user["userId"], project)
             if user["userId"] in data:
                 wattage += int(data[user["userId"]])
-        avg_watt = wattage / len(users)
-        print(f" Project name: {project['name']}. Avg wattage per hr: {round(avg_watt * total, 2)}Wh")
+        if time == 0:
+            watt_per_hour = 0
+        else:
+            watt_per_hour = wattage / time
+        total_watt_per_hour.append(watt_per_hour)
+    return total_watt_per_hour, projects
 
 
+def callApi ():
+    response = requests.get(f'{BASE_URL}/workspaces/{Workspace_ID}/projects', headers=headers)
+    if response.status_code == 200:
+        projects = response.json()
+        with open("specs.json", mode="r") as file:
+            data = json.load(file)
+        print("This Script Displays:")
+        print("The total amount of watts per hour of each project. (Based on personal devices alone)")
+        return calcEfficiency(projects, data)
+    else:
+        print(f"Error: {response.status_code} - {response.text}")
 
-response = requests.get(f'{BASE_URL}/workspaces/{Workspace_ID}/projects', headers=headers)
-if response.status_code == 200:
-    projects = response.json()
-    with open("specs.json", mode="r") as file:
-        data = json.load(file)
-    print("This Script Displays:")
-    print("The total amount of watts per hour of each project. (Based on personal devices alone)")
-    calcEfficiency(projects, data)
-else:
-    print(f"Error: {response.status_code} - {response.text}")
